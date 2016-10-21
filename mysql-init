@@ -1,0 +1,24 @@
+#!/bin/sh
+
+/usr/bin/mysql_install_db --user=mysql --defaults-file=/etc/my.cnf
+
+/usr/bin/mysqld_safe --defaults-file=/etc/my.cnf &
+
+sleep 3
+
+mysql -u root -e " \
+  SET PASSWORD = PASSWORD('mysql'); \
+  UPDATE mysql.user SET password = PASSWORD('mysql') WHERE user = 'root'; \
+  DELETE FROM mysql.user WHERE user = ''; \
+  GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'mysql' WITH GRANT OPTION; \
+  CREATE DATABASE 9grillz; \
+  GRANT ALL ON 9grillz.* to '9grillz'@'%' identified by '9grillz';"
+
+cd /tmp
+mysql -u root -pmysql 9grillz < 9grillz.sql
+cd ~
+#rm -rf /tmp/mysql-sys
+rm -rf /tmp/9grillz.sql
+
+/usr/bin/mysqladmin -u root -pmysql shutdown
+
